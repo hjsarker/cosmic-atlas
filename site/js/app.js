@@ -5,7 +5,7 @@ import {loadEphemeris,ephemerisInfo,isHorizonsAt} from './ephemeris.js';
 
 const $=s=>document.querySelector(s);
 const planetMetadata=[SUN,...PLANETS];
-let scene,selected='overview',playing=true,simDate=new Date(),speed=1,lastFrame=performance.now(),lastUi=0,hitFocus=false;
+let scene,selected='overview',playing=true,simDate=new Date(),speed=1,lastFrame=performance.now(),lastUi=0,hitFocus=false,hasExplored=false;
 const RADIANT=['#d7dfe9','#e7be92','#3f8ed1','#bf6f4c','#d0a98b','#d7b181','#a5e3e4','#538bf1'];
 const dateFormat=new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});
 function isMobile(){return matchMedia('(max-width: 760px)').matches;}
@@ -17,10 +17,16 @@ function makePlanets(){
 function openBody(id){
   if(!scene)return;
   selected=id;
+  if(id!=='overview')hasExplored=true;
   document.body.classList.toggle('focused',id!=='overview');
-  $('#intro').hidden=id!=='overview';
+  $('#intro').hidden=id!=='overview'||hasExplored;
   $('#detail').hidden=id==='overview';
-  $('#sceneHint').hidden=id!=='overview';
+  $('#detail').classList.remove('expanded');
+  $('#detailsToggle').setAttribute('aria-expanded','false');
+  $('#detailsToggle').textContent='PLANET DETAILS +';
+  $('#sceneHint').hidden=id!=='overview'||hasExplored;
+  // Other-world labels belong in the overview, not across a planet close-up.
+  $('#planetLabels').hidden=id!=='overview'||!scene.labelsVisible;
   document.querySelectorAll('[data-destination]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.destination===id)));
   if(id==='overview')return;
   const data=planetMetadata.find(x=>x.id===id);if(!data)return;
@@ -40,7 +46,7 @@ function setupLabels(){
 }
 const reusable=new THREE.Vector3();
 function updateLabels(camera,objects){
-  if(!scene||!scene.labelsVisible)return;
+  if(!scene||!scene.labelsVisible||selected!=='overview')return;
   const rect=$('#universe').getBoundingClientRect();
   for(const label of $('#planetLabels').children){
     const object=objects[label.dataset.id];if(!object)continue;
@@ -71,6 +77,14 @@ function setPlaying(on){playing=on;$('#pauseButton').textContent=on?'Ⅱ':'▶';
 function dateJump(str){const dt=new Date(str+'T12:00:00Z');if(Number.isNaN(dt.getTime()))return;simDate=dt;scene?.setDate(dt);renderDate();}
 function toggleAbout(open){$('#aboutBackdrop').hidden=!open;$('#navAbout').classList.toggle('nav-active',open);$('#navExplore').classList.toggle('nav-active',!open);if(open)$('#aboutClose').focus();}
 function toggleSettings(open){$('#settingsPanel').hidden=!open;if(open)$('#settingsClose').focus();}
+function toggleCinema(enabled){
+  document.body.classList.toggle('cinema-mode',enabled);
+  $('#cinemaButton').setAttribute('aria-pressed',String(enabled));
+  $('#cinemaButton').setAttribute('aria-label',enabled?'Exit distraction-free view':'Enter distraction-free view');
+  $('#cinemaButton').title=enabled?'Exit distraction-free view (Esc)':'Distraction-free view';
+  $('#cinemaButton').textContent=enabled?'✕':'⛶';
+  if(enabled){toggleAbout(false);toggleSettings(false);}
+}
 function attachHandlers(){
   $('#startButton').addEventListener('click',()=>scene?.focus('earth'));
   $('#tourButton').addEventListener('click',()=>scene?.focus('saturn'));
@@ -88,10 +102,18 @@ function attachHandlers(){
   $('#dateInput').addEventListener('change',e=>dateJump(e.target.value));
   $('#todayButton').addEventListener('click',()=>{simDate=new Date();scene?.setDate(simDate);renderDate();});
   $('#orbitToggle').addEventListener('change',e=>scene?.setOrbits(e.target.checked));
-  $('#labelsToggle').addEventListener('change',e=>{scene.labelsVisible=e.target.checked;$('#planetLabels').hidden=!e.target.checked;});
+  $('#labelsToggle').addEventListener('change',e=>{scene.labelsVisible=e.target.checked;$('#planetLabels').hidden=!e.target.checked||selected!=='overview';});
+  $('#lightingToggle').addEventListener('change',e=>scene?.setBalancedLighting(e.target.checked));
+  $('#detailsToggle').addEventListener('click',()=>{
+    const panel=$('#detail'),expanded=!panel.classList.contains('expanded');
+    panel.classList.toggle('expanded',expanded);
+    $('#detailsToggle').textContent=expanded?'HIDE DETAILS −':'PLANET DETAILS +';
+    $('#detailsToggle').setAttribute('aria-expanded',String(expanded));
+  });
+  $('#cinemaButton').addEventListener('click',()=>toggleCinema(!document.body.classList.contains('cinema-mode')));
   $('#bloomToggle').addEventListener('change',e=>scene?.setBloom(e.target.checked));
   $('#scaleToggle').addEventListener('change',e=>{$('#sceneLegend').innerHTML=e.target.checked?'<span class="tiny-orbit"></span><span>ORBIT DISTANCES LINEAR IN AU · PLANETS ENLARGED</span>':'<span class="tiny-orbit"></span><span>VISUAL SCALE ADJUSTED FOR EXPLORATION</span>';scene?.setScientific(e.target.checked);});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){toggleAbout(false);toggleSettings(false);}if(e.target.matches('input,select'))return;if(e.key===' '){e.preventDefault();setPlaying(!playing);}if(e.key==='0')scene?.goOverview();if(/^[1-8]$/.test(e.key))scene?.focus(PLANETS[Number(e.key)-1].id);});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){toggleAbout(false);toggleSettings(false);toggleCinema(false);}if(e.target.matches('input,select'))return;if(e.key===' '){e.preventDefault();setPlaying(!playing);}if(e.key==='0')scene?.goOverview();if(/^[1-8]$/.test(e.key))scene?.focus(PLANETS[Number(e.key)-1].id);});
 }
 async function main(){
   makePlanets();setupLabels();attachHandlers();
@@ -105,6 +127,7 @@ async function main(){
     scene.controls.target.copy(saturn).add(new THREE.Vector3(-9,0,0));
     scene.controls.update();
     $('#bloomToggle').checked=scene.bloomEnabled;
+    $('#lightingToggle').checked=scene.balancedLighting;
     await loadEphemeris();scene.setDate(simDate);
     renderDate();
     requestAnimationFrame(loop);
