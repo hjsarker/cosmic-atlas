@@ -43,7 +43,7 @@ export class CosmicScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile?1.65:2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure=1.35;
+    this.renderer.toneMappingExposure=1.08;
     this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#01030b');
     this.scene.fog=new THREE.FogExp2(0x030716,.00038);
     this.camera=new THREE.PerspectiveCamera(47,1,.05,6000);
@@ -54,7 +54,7 @@ export class CosmicScene {
     this.controls.rotateSpeed=.52;this.controls.zoomSpeed=.7;
     this.controls.autoRotate=false;
     this.controls.enablePan=!mobile;
-    this.directional=new THREE.PointLight(0xffebca,2700,0,1);this.scene.add(this.directional);
+    this.directional=new THREE.PointLight(0xffebca,730,0,1);this.scene.add(this.directional);
     this.scene.add(new THREE.AmbientLight(0x829bd0,.16));
     this.spheres={};this.orbits={};this.halos={};this.labels={};
     this.textureLoader=new THREE.TextureLoader();
@@ -108,8 +108,8 @@ export class CosmicScene {
       group.add(sphere);this.planetObjects.push(sphere);
       this.loadTexture(planet.id,sphere.material);
       if(planet.id==='earth'){
-        const shell=new THREE.Mesh(new THREE.SphereGeometry(radius*1.047,64,40),atmosphereMaterial('#53aaff',1.35));group.add(shell);
-        const cloudMaterial=new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.23,depthWrite:false,roughness:1});
+        const shell=new THREE.Mesh(new THREE.SphereGeometry(radius*1.047,64,40),atmosphereMaterial('#53aaff',.82));group.add(shell);
+        const cloudMaterial=new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.13,depthWrite:false,roughness:1});
         const clouds=new THREE.Mesh(new THREE.SphereGeometry(radius*1.018,64,40),cloudMaterial);
         clouds.userData.isCloud=true;group.add(clouds);
         // Procedural sparse cloud coverage provides subtle depth without implying live clouds.
