@@ -55,7 +55,7 @@ def build():
    request=Request(url,headers={'User-Agent':'CosmicAtlas/1.0 (open educational portfolio)'})
    with urlopen(request,timeout=18) as result:
     data=result.read(7_000_001)
-   if len(data)>7_000_000 or len(data)<180_000 or data[:3]!=b'\\xff\\xd8\\xff':
+   if len(data)>7_000_000 or len(data)<180_000 or data[:3]!=b'\xff\xd8\xff':
     raise ValueError('High-resolution file unavailable or outside asset size bounds')
    target.write_bytes(data)
    print('High-resolution',name,len(data),'bytes')
