@@ -23,13 +23,18 @@ const errors=[];
      await page.waitForFunction(() => !document.getElementById('boot') || document.getElementById('boot').classList.contains('loaded'),null,{timeout:45000});
      const failure=await page.locator('#errorScreen').isVisible();
      if(failure){await page.screenshot({path:'qa-error-'+size.name+'.png'});throw new Error('3D renderer startup failure: '+await page.locator('#errorText').innerText()+' / '+errors.join(' | '));}
+     await page.waitForTimeout(1900);
+     await page.screenshot({path:'qa-'+size.name+'-hero.png',timeout:30000});
      const heading=await page.locator('#intro h1').innerText();
      assert.ok(heading.includes('UNIVERSE'),'Hero heading must appear');
      await page.locator('#planetList [data-destination="earth"]').click();
      await page.locator('#detailName').waitFor({state:'visible',timeout:30000});
      assert.equal((await page.locator('#detailName').innerText()).trim(),'EARTH');
+     await page.waitForTimeout(1900);
+     await page.screenshot({path:'qa-'+size.name+'-earth.png',timeout:30000});
      await page.locator('#backButton').click();
      await page.locator('#intro').waitFor({state:'visible',timeout:15000});
+     await page.waitForTimeout(1900);
      await page.screenshot({path:'qa-'+size.name+'.png',timeout:30000});
      console.log('PASSED '+size.name+' WebGL startup, navigation, layout');
      await context.close();
