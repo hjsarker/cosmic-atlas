@@ -43,7 +43,7 @@ export class CosmicScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile?1.65:2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure=.96;
+    this.renderer.toneMappingExposure=.84;
     this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#01030b');
     this.scene.fog=new THREE.FogExp2(0x030716,.00038);
     this.camera=new THREE.PerspectiveCamera(47,1,.05,6000);
@@ -54,7 +54,7 @@ export class CosmicScene {
     this.controls.rotateSpeed=.52;this.controls.zoomSpeed=.7;
     this.controls.autoRotate=false;
     this.controls.enablePan=!mobile;
-    this.directional=new THREE.PointLight(0xffebca,730,0,1);this.scene.add(this.directional);
+    this.directional=new THREE.PointLight(0xffebca,480,0,1);this.scene.add(this.directional);
     // A subtle camera-side fill makes the unlit hemisphere explorable without
     // removing the day/night boundary. This is an artistic viewing aid, not sunlight.
     this.scene.add(new THREE.AmbientLight(0xa8bedf,.22));
