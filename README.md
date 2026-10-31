@@ -4,7 +4,7 @@
 
 **A cinematic, interactive Solar System explorer**, with textured planets, smooth camera travel, orbit lines, simulated time, inspection panels, mobile controls, and astronomical positions derived from NASA/JPL data.
 
-> **Hosting:** Free GitHub Pages. The final public URL is expected to be `https://hjsarker.github.io/cosmic-atlas/` once the GitHub Pages Actions source is enabled and the workflow completes. An unconfigured Pages URL is not a published deployment.
+> **Live deployment:** [Cosmic Atlas on GitHub Pages](https://hjsarker.github.io/cosmic-atlas/) is public and free to visit. GitHub Actions validates the astronomy model, refreshes verified NASA/JPL Horizons observations, prepares attributed planetary textures and deploys the website. Chromium browser QA covers desktop and mobile navigation.
 
 ## What you can do
 
