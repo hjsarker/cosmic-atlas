@@ -30,8 +30,11 @@ jobs:
         run: |
           node --test tests/*.test.mjs
           for js in site/js/*.js; do node --check "$js"; done
-      - name: Download and verify licensed 2K planet textures
-        run: python scripts/prepare_assets.py
+      - name: Download and verify licensed planetary and real-sky assets
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/prepare_assets.py
+          python scripts/prepare_sky.py
       - name: Retrieve official Horizons positions (optional refinement)
         run: |
           if python scripts/sync_horizons.py; then
