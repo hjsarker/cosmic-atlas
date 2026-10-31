@@ -104,6 +104,7 @@ function attachHandlers(){
   $('#orbitToggle').addEventListener('change',e=>scene?.setOrbits(e.target.checked));
   $('#labelsToggle').addEventListener('change',e=>{scene.labelsVisible=e.target.checked;$('#planetLabels').hidden=!e.target.checked||selected!=='overview';});
   $('#lightingToggle').addEventListener('change',e=>scene?.setBalancedLighting(e.target.checked));
+  $('#skyMode').addEventListener('change',e=>scene?.setSkyMode(e.target.value));
   $('#detailsToggle').addEventListener('click',()=>{
     const panel=$('#detail'),expanded=!panel.classList.contains('expanded');
     panel.classList.toggle('expanded',expanded);
@@ -128,6 +129,7 @@ async function main(){
     scene.controls.update();
     $('#bloomToggle').checked=scene.bloomEnabled;
     $('#lightingToggle').checked=scene.balancedLighting;
+    $('#skyMode').value='cinematic';
     await loadEphemeris();scene.setDate(simDate);
     renderDate();
     requestAnimationFrame(loop);
