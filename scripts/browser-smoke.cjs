@@ -1,0 +1,35 @@
+/* End-to-end browser smoke and visual snapshots.
+ * Uses only the public static site, synthetic browser state and test navigation.
+ */
+const { chromium } = require('playwright');
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+
+(async () => {
+ const browser = await chromium.launch({headless:true,args:[
+   '--no-sandbox','--enable-unsafe-swiftshader','--use-angle=swiftshader',
+   '--disable-dev-shm-usage'
+ ]});
+ const errors=[];
+ try {
+   for (const size of [{name:'desktop',width:1440,height:900},{name:'mobile',width:390,height:844}]) {
+     const context = await browser.newContext({viewport:{width:size.width,height:size.height},
+       deviceScaleFactor:1,reducedMotion:'reduce'});
+     const page = await context.newPage();
+     page.on('pageerror',error=>errors.push(size.name+': '+error.message));
+     await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded',timeout:30000});
+     await page.locator('#boot.loaded').waitFor({timeout:45000});
+     const heading=await page.locator('#intro h1').innerText();
+     assert.ok(heading.includes('UNIVERSE'),'Hero heading must appear');
+     await page.locator('#planetList [data-destination="earth"]').click();
+     await page.locator('#detailName').waitFor({state:'visible',timeout:30000});
+     assert.equal((await page.locator('#detailName').innerText()).trim(),'EARTH');
+     await page.locator('#backButton').click();
+     await page.locator('#intro').waitFor({state:'visible',timeout:15000});
+     await page.screenshot({path:'qa-'+size.name+'.png',timeout:30000});
+     console.log('PASSED '+size.name+' WebGL startup, navigation, layout');
+     await context.close();
+   }
+   assert.equal(errors.length,0,errors.join('\n'));
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
