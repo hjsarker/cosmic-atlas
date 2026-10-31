@@ -195,7 +195,13 @@ export class CosmicScene {
     const distance=id==='sun'?34:Math.max(entry.radius*4.35,7.5);
     const currentDirection=this.camera.position.clone().sub(this.controls.target).normalize();
     if(currentDirection.lengthSq()<.5)currentDirection.set(.66,.30,.71).normalize();
-    const endpoint=location.clone().add(new THREE.Vector3(.83,.34,1).normalize().multiplyScalar(distance));
+    // Favor a three-quarter illuminated view for readable real surface textures.
+    // The camera is positioned relative to the Sun, not a fixed world direction.
+    const sunward=location.clone().negate().normalize();
+    const tangent=new THREE.Vector3(-sunward.z,0,sunward.x).normalize();
+    const viewpoint=id==='sun'?new THREE.Vector3(.83,.34,1).normalize():
+      sunward.multiplyScalar(.84).addScaledVector(tangent,.44).add(new THREE.Vector3(0,.22,0)).normalize();
+    const endpoint=location.clone().add(viewpoint.multiplyScalar(distance));
     this.startFlight(location.clone(),endpoint,1800);
     this.callbacks.focus?.(id);
   }
