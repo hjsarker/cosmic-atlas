@@ -98,6 +98,12 @@ async function main(){
   try{
     scene=new CosmicScene($('#universe'),{focus:openBody,frame:updateLabels});
     scene.setDate(simDate);
+    // Open with an editorial close-up of Saturn, while leaving the home UI in overview.
+    // Visitors can still fly to every other world or select the wide overview.
+    const saturn=scene.spheres.saturn.group.position;
+    scene.camera.position.copy(saturn).add(new THREE.Vector3(13,8,34));
+    scene.controls.target.copy(saturn).add(new THREE.Vector3(-9,0,0));
+    scene.controls.update();
     $('#bloomToggle').checked=scene.bloomEnabled;
     await loadEphemeris();scene.setDate(simDate);
     renderDate();
