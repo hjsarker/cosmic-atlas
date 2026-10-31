@@ -70,3 +70,12 @@
  .cinema-button{font-size:18px;}
  .scene-hint,.coordinates,.right-side-rail{display:none!important;}
 }
+
+/* ESA/Gaia celestial-sky controls */
+.sky-setting{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 0 8px}
+.sky-setting label{display:flex;flex-direction:column;gap:5px;min-width:0}
+.sky-setting label strong{font-size:12px;font-weight:600;color:#d3dbe6}
+.sky-setting label small{font-size:10px;color:#91a3bb;line-height:1.45}
+.sky-setting select{border:1px solid #657389;border-radius:7px;background:#1c2b3f;color:#f0e4d8;font-size:11px;padding:9px;max-width:150px;min-width:120px;cursor:pointer}
+.settings .sky-caption{font-size:10px;line-height:1.55;margin:6px 0 11px;color:#a6b9ce;border-left:2px solid #a0c6c7;padding-left:9px}
+@media(max-width:440px){.sky-setting{flex-direction:column}.sky-setting select{max-width:100%;width:100%}}
