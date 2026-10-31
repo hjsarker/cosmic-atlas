@@ -43,7 +43,7 @@ export class CosmicScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile?1.65:2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.toneMapping=THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure=1.08;
+    this.renderer.toneMappingExposure=.96;
     this.scene=new THREE.Scene();this.scene.background=new THREE.Color('#01030b');
     this.scene.fog=new THREE.FogExp2(0x030716,.00038);
     this.camera=new THREE.PerspectiveCamera(47,1,.05,6000);
@@ -57,8 +57,8 @@ export class CosmicScene {
     this.directional=new THREE.PointLight(0xffebca,730,0,1);this.scene.add(this.directional);
     // A subtle camera-side fill makes the unlit hemisphere explorable without
     // removing the day/night boundary. This is an artistic viewing aid, not sunlight.
-    this.scene.add(new THREE.AmbientLight(0xa8bedf,.30));
-    this.fillLight=new THREE.DirectionalLight(0xcbdfff,1.05);
+    this.scene.add(new THREE.AmbientLight(0xa8bedf,.22));
+    this.fillLight=new THREE.DirectionalLight(0xcbdfff,.62);
     this.fillLight.position.copy(this.camera.position);
     this.fillLight.target.position.copy(this.controls.target);
     this.scene.add(this.fillLight,this.fillLight.target);
@@ -128,7 +128,7 @@ export class CosmicScene {
       this.loadTexture(planet.id,sphere.material);
       if(planet.id==='earth'){
         const shell=new THREE.Mesh(new THREE.SphereGeometry(radius*1.047,64,40),atmosphereMaterial('#53aaff',.82));group.add(shell);
-        const cloudMaterial=new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.13,depthWrite:false,roughness:1});
+        const cloudMaterial=new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.045,depthWrite:false,roughness:1});
         const clouds=new THREE.Mesh(new THREE.SphereGeometry(radius*1.018,64,40),cloudMaterial);
         clouds.userData.isCloud=true;group.add(clouds);
         // Procedural sparse cloud coverage provides subtle depth without implying live clouds.
@@ -195,7 +195,7 @@ export class CosmicScene {
   setBloom(enabled){this.bloomEnabled=enabled;this.bloom.enabled=enabled;}
   setBalancedLighting(enabled){
     this.balancedLighting=enabled;
-    this.fillLight.intensity=enabled?1.05:0;
+    this.fillLight.intensity=enabled?.62:0;
   }
   setOrbits(enabled){this.orbitsVisible=enabled;for(const m of Object.values(this.orbits))m.visible=enabled;}
   setScientific(enabled){this.scientific=enabled;this.updatePositions(true);this.refreshOrbits();if(this.target==='overview')this.goOverview();else this.focus(this.target);}
