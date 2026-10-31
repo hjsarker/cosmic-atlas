@@ -17,8 +17,12 @@ const assert = require('node:assert/strict');
        deviceScaleFactor:1,reducedMotion:'reduce'});
      const page = await context.newPage();
      page.on('pageerror',error=>errors.push(size.name+': '+error.message));
+     page.on('console',msg=>{if(msg.type()==='error')errors.push(size.name+' console: '+msg.text());});
+     page.on('requestfailed',request=>errors.push(size.name+' request: '+request.url()+' '+request.failure()?.errorText));
      await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded',timeout:30000});
-     await page.locator('#boot.loaded').waitFor({timeout:45000});
+     await page.waitForFunction(() => !document.getElementById('boot') || document.getElementById('boot').classList.contains('loaded'),{timeout:45000});
+     const failure=await page.locator('#errorScreen').isVisible();
+     if(failure){await page.screenshot({path:'qa-error-'+size.name+'.png'});throw new Error('3D renderer startup failure: '+await page.locator('#errorText').innerText()+' / '+errors.join(' | '));}
      const heading=await page.locator('#intro h1').innerText();
      assert.ok(heading.includes('UNIVERSE'),'Hero heading must appear');
      await page.locator('#planetList [data-destination="earth"]').click();
@@ -32,4 +36,4 @@ const assert = require('node:assert/strict');
    }
    assert.equal(errors.length,0,errors.join('\n'));
  }finally{await browser.close();}
-})().catch(e=>{console.error(e);process.exitCode=1;});
+})().catch(e=>{console.error('Browser errors:',errors.join(' | '));console.error(e);process.exitCode=1;});
