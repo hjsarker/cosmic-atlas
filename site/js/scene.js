@@ -55,7 +55,14 @@ export class CosmicScene {
     this.controls.autoRotate=false;
     this.controls.enablePan=!mobile;
     this.directional=new THREE.PointLight(0xffebca,730,0,1);this.scene.add(this.directional);
-    this.scene.add(new THREE.AmbientLight(0x829bd0,.16));
+    // A subtle camera-side fill makes the unlit hemisphere explorable without
+    // removing the day/night boundary. This is an artistic viewing aid, not sunlight.
+    this.scene.add(new THREE.AmbientLight(0xa8bedf,.30));
+    this.fillLight=new THREE.DirectionalLight(0xcbdfff,1.05);
+    this.fillLight.position.copy(this.camera.position);
+    this.fillLight.target.position.copy(this.controls.target);
+    this.scene.add(this.fillLight,this.fillLight.target);
+    this.balancedLighting=true;
     this.spheres={};this.orbits={};this.halos={};this.labels={};
     this.textureLoader=new THREE.TextureLoader();
     this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();
@@ -69,7 +76,19 @@ export class CosmicScene {
     this.clock=new THREE.Clock();this.animateBound=()=>this.animate();this.animating=true;this.animate();
   }
   loadTexture(name,material){
-    const apply=(texture)=>{texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(this.renderer.capabilities.getMaxAnisotropy(),8);material.map=texture;material.needsUpdate=true;};
+    const apply=(texture)=>{
+      texture.colorSpace=THREE.SRGBColorSpace;
+      texture.anisotropy=Math.min(this.renderer.capabilities.getMaxAnisotropy(),16);
+      texture.minFilter=THREE.LinearMipmapLinearFilter;
+      // Do not tint real planetary maps with the fallback placeholder color.
+      material.color.set(0xffffff);
+      material.map=texture;
+      if(name==='mars'||name==='mercury'){
+        material.bumpMap=texture;
+        material.bumpScale=name==='mars'?.024:.016;
+      }
+      material.needsUpdate=true;
+    };
     this.textureLoader.load(TEXTURE_ROOT+name+'.jpg',apply,undefined,()=>{
       this.textureLoader.load(FALLBACK_TEXTURE_ROOT+name+'.jpg',apply,undefined,()=>{});
     });
@@ -174,6 +193,10 @@ export class CosmicScene {
     this.setBloom(this.bloomEnabled);
   }
   setBloom(enabled){this.bloomEnabled=enabled;this.bloom.enabled=enabled;}
+  setBalancedLighting(enabled){
+    this.balancedLighting=enabled;
+    this.fillLight.intensity=enabled?1.05:0;
+  }
   setOrbits(enabled){this.orbitsVisible=enabled;for(const m of Object.values(this.orbits))m.visible=enabled;}
   setScientific(enabled){this.scientific=enabled;this.updatePositions(true);this.refreshOrbits();if(this.target==='overview')this.goOverview();else this.focus(this.target);}
   fit(){
@@ -239,6 +262,9 @@ export class CosmicScene {
     for(const planet of PLANETS){this.spheres[planet.id].mesh.rotation.y+=rotationSpeed*(planet.id==='jupiter'?2:1);}
     if(this.clouds)this.clouds.rotation.y+=rotationSpeed*.24;
     this.controls.update();
+    // Keep the soft fill direction aligned to the visitor's view as they orbit.
+    this.fillLight.position.copy(this.camera.position);
+    this.fillLight.target.position.copy(this.controls.target);
     this.composer.render();
     if(this.frame%2===0)this.callbacks.frame?.(this.camera,this.spheres);
   }
