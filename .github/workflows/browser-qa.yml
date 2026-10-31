@@ -1,0 +1,43 @@
+name: Browser quality assurance
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'scripts/browser-smoke.cjs'
+      - 'scripts/prepare_assets.py'
+      - '.github/workflows/browser-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser and texture assets
+        run: |
+          python scripts/prepare_assets.py
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local site and verify desktop and mobile interaction
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 --directory site > /tmp/cosmic-server.log 2>&1 &
+          sleep 2
+          node scripts/browser-smoke.cjs
+      - name: Upload browser screenshots for manual visual QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cosmic-atlas-browser-screenshots
+          path: qa-*.png
+          if-no-files-found: ignore
