@@ -38,3 +38,5 @@ jobs:
           git add -A
           git commit -m "Publish complete Cosmic Atlas 3D source, NASA data pipeline and tests"
           git push
+
+# Pages workflow was installed separately with authorized GitHub write access.
