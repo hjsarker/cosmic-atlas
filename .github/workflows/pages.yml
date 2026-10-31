@@ -1,0 +1,58 @@
+name: Build and publish Cosmic Atlas
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 1 * *'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: cosmic-atlas-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify astronomical model and frontend syntax
+        run: |
+          node --test tests/*.test.mjs
+          for js in site/js/*.js; do node --check "$js"; done
+      - name: Download and verify licensed 2K planet textures
+        run: python scripts/prepare_assets.py
+      - name: Retrieve official Horizons positions (optional refinement)
+        run: |
+          if python scripts/sync_horizons.py; then
+            echo 'Using verified NASA/JPL Horizons daily vectors.'
+          else
+            echo 'Horizons unavailable: published JPL Kepler model remains available.'
+          fi
+      - name: Prepare GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish public website
+        id: deployment
+        uses: actions/deploy-pages@v4
