@@ -40,17 +40,17 @@ def build():
  # Desktop-only high-resolution options. A 2K copy is always provided
  # so a temporarily unavailable texture host cannot break deployments.
  hires={
-   'earth':'4k_earth_daymap.jpg',
-   'mars':'4k_mars.jpg',
-   'jupiter':'4k_jupiter.jpg',
-   'saturn':'4k_saturn.jpg',
+   'earth':'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Solarsystemscope_texture_8k_earth_daymap.jpg/4096px-Solarsystemscope_texture_8k_earth_daymap.jpg',
+   'mars':'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solarsystemscope_texture_8k_mars.jpg/4096px-Solarsystemscope_texture_8k_mars.jpg',
+   'jupiter':'https://upload.wikimedia.org/wikipedia/commons/5/5e/Solarsystemscope_texture_8k_jupiter.jpg',
+   'saturn':'https://upload.wikimedia.org/wikipedia/commons/1/1e/Solarsystemscope_texture_8k_saturn.jpg',
  }
  for name,source_file in hires.items():
   source=ROOT/(name+'.jpg')
   target=ROOT/(name+'-hd.jpg')
   if target.exists() and target.stat().st_size>20_000:
    continue
-  url='https://www.solarsystemscope.com/textures/download/'+source_file
+  url=source_file
   try:
    request=Request(url,headers={'User-Agent':'CosmicAtlas/1.0 (open educational portfolio)'})
    with urlopen(request,timeout=18) as result:
