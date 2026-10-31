@@ -6,6 +6,7 @@ import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {PLANETS,SUN,scenePosition} from './astronomy.js';
 import {positionAt} from './ephemeris.js';
+import {CelestialSky} from './sky.js';
 
 const TAU=Math.PI*2;
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
@@ -69,7 +70,7 @@ export class CosmicScene {
     this.planetObjects=[];this.target='overview';this.pendingFlight=null;
     this.scientific=false;this.orbitsVisible=true;this.labelsVisible=true;this.time=new Date();this.frame=0;
     this.bloomEnabled=!mobile;
-    this.makeStars();this.makeSun();this.makePlanets();this.makeOrbits();this.buildPostprocessing();
+    this.sky=new CelestialSky(this.scene,this.camera,mobile);this.makeSun();this.makePlanets();this.makeOrbits();this.buildPostprocessing();
     this.fit();window.addEventListener('resize',this.fitBound=()=>this.fit());
     canvas.addEventListener('pointerdown',e=>{this.down={x:e.clientX,y:e.clientY}});
     canvas.addEventListener('pointerup',e=>this.pick(e));
@@ -94,22 +95,6 @@ export class CosmicScene {
     this.textureLoader.load(TEXTURE_ROOT+filename,apply,undefined,()=>{
       this.textureLoader.load(FALLBACK_TEXTURE_ROOT+name+'.jpg',apply,undefined,()=>{});
     });
-  }
-  makeStars(){
-    const count=this.mobile?5200:11000,pts=new Float32Array(count*3),colors=new Float32Array(count*3),sizes=[];
-    for(let i=0;i<count;i++){
-      const r=420+Math.random()*1900,z=2*Math.random()-1,a=Math.random()*TAU,s=Math.sqrt(1-z*z);
-      pts[i*3]=r*s*Math.cos(a);pts[i*3+1]=r*z;pts[i*3+2]=r*s*Math.sin(a);
-      let tint=Math.random();colors[i*3]=tint>.8?1:.67+Math.random()*.25;colors[i*3+1]=tint>.8?.71:.77+Math.random()*.2;colors[i*3+2]=tint>.8?.61:1;sizes.push(1);
-    }
-    const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(pts,3));geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
-    const stars=new THREE.Points(geometry,new THREE.PointsMaterial({size:this.mobile?1.6:2.35,sizeAttenuation:false,transparent:true,opacity:.92,vertexColors:true,depthWrite:false}));this.scene.add(stars);
-    const brightCount=260,bright=new Float32Array(brightCount*3);
-    for(let i=0;i<brightCount;i++){const r=340+Math.random()*1600,a=Math.random()*TAU,z=Math.random()*2-1,s=Math.sqrt(1-z*z);bright[i*3]=r*s*Math.cos(a);bright[i*3+1]=r*z;bright[i*3+2]=r*s*Math.sin(a);}
-    const brightG=new THREE.BufferGeometry();brightG.setAttribute('position',new THREE.BufferAttribute(bright,3));
-    const texture=starTexture();this.scene.add(new THREE.Points(brightG,new THREE.PointsMaterial({map:texture,color:0xc4dafa,transparent:true,opacity:.75,size:this.mobile?12:17,sizeAttenuation:false,depthWrite:false,blending:THREE.AdditiveBlending})));
-    // Fine nebulous haze is decorative rather than an astronomical sky chart.
-    const haze=new THREE.Sprite(new THREE.SpriteMaterial({map:radialTexture(),color:0x304b9e,transparent:true,opacity:.09,blending:THREE.AdditiveBlending,depthWrite:false}));haze.position.set(-630,180,-850);haze.scale.set(1450,700,1);this.scene.add(haze);
   }
   makeSun(){
     const geometry=new THREE.SphereGeometry(RADII.sun,this.mobile?48:96,this.mobile?32:64);
@@ -195,6 +180,7 @@ export class CosmicScene {
     this.setBloom(this.bloomEnabled);
   }
   setBloom(enabled){this.bloomEnabled=enabled;this.bloom.enabled=enabled;}
+  setSkyMode(mode){this.sky?.setMode(mode);}
   setBalancedLighting(enabled){
     this.balancedLighting=enabled;
     this.fillLight.intensity=enabled?.62:0;
@@ -267,8 +253,9 @@ export class CosmicScene {
     // Keep the soft fill direction aligned to the visitor's view as they orbit.
     this.fillLight.position.copy(this.camera.position);
     this.fillLight.target.position.copy(this.controls.target);
+    this.sky?.update();
     this.composer.render();
     if(this.frame%2===0)this.callbacks.frame?.(this.camera,this.spheres);
   }
-  destroy(){this.animating=false;window.removeEventListener('resize',this.fitBound);this.controls.dispose();this.renderer.dispose();}
+  destroy(){this.animating=false;window.removeEventListener('resize',this.fitBound);this.sky?.dispose();this.controls.dispose();this.renderer.dispose();}
 }
