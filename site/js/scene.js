@@ -190,6 +190,7 @@ export class CosmicScene {
   focus(id){
     const entry=this.spheres[id];if(!entry)return;
     this.target=id;this.controls.autoRotate=false;
+    this.controls.minDistance=Math.max(2.3,entry.radius*1.3);
     const location=entry.group?.position||new THREE.Vector3();
     const distance=id==='sun'?34:Math.max(entry.radius*4.35,7.5);
     const currentDirection=this.camera.position.clone().sub(this.controls.target).normalize();
@@ -199,7 +200,7 @@ export class CosmicScene {
     this.callbacks.focus?.(id);
   }
   goOverview(){
-    this.target='overview';const endpoint=this.scientific?new THREE.Vector3(270,470,930):new THREE.Vector3(65,98,202);
+    this.target='overview';this.controls.minDistance=2.3;const endpoint=this.scientific?new THREE.Vector3(270,470,930):new THREE.Vector3(65,98,202);
     this.startFlight(new THREE.Vector3(0,0,0),endpoint,1900);this.callbacks.focus?.('overview');
   }
   startFlight(target,position,duration){
