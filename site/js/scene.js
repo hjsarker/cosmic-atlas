@@ -89,7 +89,9 @@ export class CosmicScene {
       }
       material.needsUpdate=true;
     };
-    this.textureLoader.load(TEXTURE_ROOT+name+'.jpg',apply,undefined,()=>{
+    const highDetail=!this.mobile&&['earth','mars','jupiter','saturn'].includes(name);
+    const filename=name+(highDetail?'-hd':'')+'.jpg';
+    this.textureLoader.load(TEXTURE_ROOT+filename,apply,undefined,()=>{
       this.textureLoader.load(FALLBACK_TEXTURE_ROOT+name+'.jpg',apply,undefined,()=>{});
     });
   }
