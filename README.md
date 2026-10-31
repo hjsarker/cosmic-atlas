@@ -67,3 +67,5 @@ The included `.github/workflows/pages.yml` validates the model, downloads textur
 Astronomical parameters: NASA/JPL Solar System Dynamics and Horizons. Planetary map textures: Solar System Scope, **CC BY 4.0** (attribution required). See [ATTRIBUTION.md](ATTRIBUTION.md) for full source and license details. Project source: MIT, except separately licensed texture assets and source data.
 
 This is an independent educational visualization. NASA/JPL and Solar System Scope are not affiliated with the project.
+
+<!-- Initial GitHub Pages build triggered after readable source restoration. -->
