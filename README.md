@@ -12,17 +12,20 @@
 - **Travel through time:** Pause, speed up the motion, or enter a date. Position calculations follow planetary orbits rather than arbitrary constant-speed circles.
 - **Inspect:** View carefully rounded planetary facts and physical dimensions. Units and explanatory notes distinguish the astronomical orbit model from artistic design.
 - **Choose the scale:** Cinematic exploration compresses solar distances and enlarges worlds. Linear-AU mode shows proportional orbital distances while keeping planet radii enlarged for visibility.
-- **Adjust visuals:** Toggle orbital paths, labels and bloom. The responsive layout adapts to mobile screens.
+- **Explore the real celestial sky:** Rotate around planets against an ESA Gaia Milky Way survey panorama, with 11,000+ bright stars placed by cataloged equatorial coordinates. Switch between cinematic and subdued sky modes in Display Settings.
+- **Adjust visuals:** Toggle orbital paths, labels, balanced surface illumination and bloom. The responsive layout adapts to mobile screens.
 
 ## Technology
 
-Static **HTML, CSS, JavaScript, Three.js/WebGL, and Python**. The 3D scene uses Three.js modules and lighting, environment stars, material maps, atmospheric shaders, Saturn's procedural rings, bloom postprocessing, and smooth camera interpolation. No database, payment service or always-on server is required.
+Static **HTML, CSS, JavaScript, Three.js/WebGL, and Python**. The 3D scene uses Three.js modules and lighting, an ESA Gaia sky dome with ecliptic/Galactic transformations, HYG stellar coordinates and brightness, material maps, atmospheric shaders, Saturn's procedural rings, bloom postprocessing, and smooth camera interpolation. No database, payment service or always-on server is required.
 
 ## Real astronomical data
 
 **Primary model:** NASA/JPL published Keplerian elements, Table 1, valid 1800–2050. This computes the heliocentric ecliptic positions of Mercury, Venus, the Earth–Moon barycenter, Mars, Jupiter, Saturn, Uranus and Neptune from evolving orbital elements and Kepler's equation. It is a published *approximation*, not real-time telescope measurements.
 
 **Optional higher-precision source:** GitHub Actions downloads validated daily heliocentric vectors from the official JPL Horizons API. When this snapshot is available and covers the selected date, the viewer linearly interpolates Horizons points. If the external source is unavailable, the viewer clearly identifies and uses the approximation; it never invents API readings.
+
+**Celestial sky:** ESA/Gaia/DPAC EDR3 equirectangular Galactic all-sky survey imagery forms the directional background. The HYG v4.1 bright-star subset is rendered using cataloged RA/Dec, magnitude and approximate color. Both sources are transformed into the J2000 ecliptic axes shared with the JPL planet positions. Survey exposure is artistically enhanced, stars are fixed at a common epoch, and parallax/proper motion are not simulated. See [attribution and licensing](ATTRIBUTION.md).
 
 **Visual fidelity versus scientific scale:** Physical planet diameter ratios are intentionally exaggerated and distances are compressed in cinematic mode. Linear mode preserves distance ratios in AU but still exaggerates planet radii. Planet surface maps are enhanced composites, not live imagery. Light and clouds are rendered for visual effect. The site discloses these limitations directly.
 
@@ -44,10 +47,12 @@ node --test tests/*.test.mjs
 for file in site/js/*.js; do node --check "$file"; done
 ```
 
-Download licensed textures locally:
+Download licensed planet textures and the real Gaia sky/HYG catalog locally:
 
 ```bash
+python3 -m pip install Pillow==11.3.0
 python3 scripts/prepare_assets.py
+python3 scripts/prepare_sky.py
 ```
 
 Fetch a new verified Horizons snapshot:
@@ -64,7 +69,7 @@ The included `.github/workflows/pages.yml` validates the model, downloads textur
 
 ## Source credits
 
-Astronomical parameters: NASA/JPL Solar System Dynamics and Horizons. Planetary map textures: Solar System Scope, **CC BY 4.0** (attribution required). See [ATTRIBUTION.md](ATTRIBUTION.md) for full source and license details. Project source: MIT, except separately licensed texture assets and source data.
+Astronomical parameters: NASA/JPL Solar System Dynamics and Horizons. Celestial panorama: ESA/Gaia/DPAC (A. Moitinho), **CC BY-SA 3.0 IGO**. Bright stars: HYG Database, **CC BY-SA 4.0**. Planetary map textures: Solar System Scope, **CC BY 4.0** (attribution required). See [ATTRIBUTION.md](ATTRIBUTION.md) for full source and license details. Project source: MIT, except separately licensed texture assets and source data.
 
 This is an independent educational visualization. NASA/JPL and Solar System Scope are not affiliated with the project.
 
