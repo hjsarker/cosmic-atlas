@@ -203,7 +203,7 @@ export class CosmicScene {
     this.startFlight(new THREE.Vector3(0,0,0),endpoint,1900);this.callbacks.focus?.('overview');
   }
   startFlight(target,position,duration){
-    this.pendingFlight={fromPos:this.camera.position.clone(),fromTarget:this.controls.target.clone(),toPos:position,toTarget:target,elapsed:0,duration};
+    this.pendingFlight={fromPos:this.camera.position.clone(),fromTarget:this.controls.target.clone(),toPos:position,toTarget:target,started:performance.now(),duration};
   }
   pick(event){
     if(!this.down || Math.hypot(event.clientX-this.down.x,event.clientY-this.down.y)>8 || this.pendingFlight)return;
@@ -218,8 +218,7 @@ export class CosmicScene {
     requestAnimationFrame(this.animateBound);
     const dt=Math.min(this.clock.getDelta(),.05);this.frame++;
     if(this.pendingFlight){
-      const f=this.pendingFlight;f.elapsed+=dt*1000;
-      const t=clamp(f.elapsed/f.duration,0,1);const eased=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      const f=this.pendingFlight;const t=clamp((performance.now()-f.started)/f.duration,0,1);const eased=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
       this.camera.position.lerpVectors(f.fromPos,f.toPos,eased);
       this.controls.target.lerpVectors(f.fromTarget,f.toTarget,eased);
       if(t>=1)this.pendingFlight=null;
