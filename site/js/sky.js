@@ -64,7 +64,7 @@ export class CelestialSky {
     this.texture.minFilter=THREE.LinearMipmapLinearFilter;
     this.texture.anisotropy=mobile?2:8;
     const material=new THREE.ShaderMaterial({
-      uniforms:{skyMap:{value:this.texture},exposure:{value:mobile?.62:.75}},
+      uniforms:{skyMap:{value:this.texture},exposure:{value:mobile?.39:.47}},
       vertexShader:`varying vec3 direction;void main(){direction=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
       fragmentShader,side:THREE.BackSide,depthWrite:false,depthTest:true,fog:false
     });
@@ -131,7 +131,7 @@ export class CelestialSky {
   setMode(mode){
     this.mode=mode==='scientific'?'scientific':'cinematic';
     // Both modes are directionally aligned. Only display exposure changes.
-    this.dome.material.uniforms.exposure.value=this.mode==='scientific'?.40:(this.mobile?.62:.75);
+    this.dome.material.uniforms.exposure.value=this.mode==='scientific'?.22:(this.mobile?.39:.47);
     if(this.stars)this.stars.material.uniforms.brightness.value=this.mode==='scientific'?.47:(this.mobile?.68:.86);
   }
   update(){this.group.position.copy(this.camera.position);}
