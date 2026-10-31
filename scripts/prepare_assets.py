@@ -37,4 +37,31 @@ def build():
   else:
    raise RuntimeError(f'Missing essential 3D texture for {name}')
 
+ # Desktop-only high-resolution options. A 2K copy is always provided
+ # so a temporarily unavailable texture host cannot break deployments.
+ hires={
+   'earth':'4k_earth_daymap.jpg',
+   'mars':'4k_mars.jpg',
+   'jupiter':'4k_jupiter.jpg',
+   'saturn':'4k_saturn.jpg',
+ }
+ for name,source_file in hires.items():
+  source=ROOT/(name+'.jpg')
+  target=ROOT/(name+'-hd.jpg')
+  if target.exists() and target.stat().st_size>20_000:
+   continue
+  url='https://www.solarsystemscope.com/textures/download/'+source_file
+  try:
+   request=Request(url,headers={'User-Agent':'CosmicAtlas/1.0 (open educational portfolio)'})
+   with urlopen(request,timeout=18) as result:
+    data=result.read(7_000_001)
+   if len(data)>7_000_000 or len(data)<180_000 or data[:3]!=b'\\xff\\xd8\\xff':
+    raise ValueError('High-resolution file unavailable or outside asset size bounds')
+   target.write_bytes(data)
+   print('High-resolution',name,len(data),'bytes')
+  except Exception as exc:
+   import shutil
+   shutil.copyfile(source,target)
+   print('Using safe 2K fallback for',name,':',str(exc)[:160])
+
 if __name__=='__main__':build()
